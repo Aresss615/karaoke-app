@@ -426,7 +426,6 @@
       <button class="genre-tab" data-genre="opm" onclick="setGenre('opm')">OPM / TAGALOG</button>
       <button class="genre-tab" data-genre="pop" onclick="setGenre('pop')">ENGLISH POP/ROCK</button>
       <button class="genre-tab" data-genre="90s" onclick="setGenre('90s')">90s / 2000s</button>
-      <button class="genre-tab" data-genre="uncle" onclick="setGenre('uncle')">UNCLE CLASSICS</button>
       <button class="genre-tab" data-genre="ilocano" onclick="setGenre('ilocano')">ILOCANO</button>
     </div>
 
@@ -499,27 +498,6 @@ const SONGS = [
   { code: '30018', title: 'Mambo No. 5',              artist: 'Lou Bega',            genre: '90s' },
   { code: '30019', title: 'Genie in a Bottle',        artist: 'Christina Aguilera',  genre: '90s' },
   { code: '30020', title: 'Beautiful',                artist: 'Christina Aguilera',  genre: '90s' },
-  // Uncle Classics  (40001–40020)
-  { code: '40001', title: 'Anak',                     artist: 'Freddie Aguilar',     genre: 'uncle' },
-  { code: '40002', title: 'Buhay',                    artist: 'Freddie Aguilar',     genre: 'uncle' },
-  { code: '40003', title: 'Tsinelas',                 artist: 'Max Surban',          genre: 'uncle' },
-  { code: '40004', title: 'Pilion Ta Kang Balay',     artist: 'Max Surban',          genre: 'uncle' },
-  { code: '40005', title: 'Magtanim Ay Di Biro',      artist: 'Traditional',         genre: 'uncle' },
-  { code: '40006', title: 'Leron Leron Sinta',        artist: 'Traditional',         genre: 'uncle' },
-  { code: '40007', title: 'Boom Tarat Tarat',         artist: 'Yoyoy Villame',       genre: 'uncle' },
-  { code: '40008', title: 'Siopao Siomai',            artist: 'Yoyoy Villame',       genre: 'uncle' },
-  { code: '40009', title: 'Ikaw',                     artist: 'Yeng Constantino',    genre: 'uncle' },
-  { code: '40010', title: 'Babalik Ka Rin',           artist: 'Gary Valenciano',     genre: 'uncle' },
-  { code: '40011', title: 'Di Bale Na Lang',          artist: 'Gary Valenciano',     genre: 'uncle' },
-  { code: '40012', title: 'You Are My Song',          artist: 'Martin Nievera',      genre: 'uncle' },
-  { code: '40013', title: 'Be My Lady',               artist: 'Martin Nievera',      genre: 'uncle' },
-  { code: '40014', title: 'Forevermore',              artist: 'Side A',              genre: 'uncle' },
-  { code: '40015', title: 'Perfect Gift',             artist: 'Side A',              genre: 'uncle' },
-  { code: '40016', title: 'Umagang Kay Ganda',        artist: 'Sampaguita',          genre: 'uncle' },
-  { code: '40017', title: 'Laging Nandito',           artist: 'Jaya',                genre: 'uncle' },
-  { code: '40018', title: 'Ikaw Pa Rin',              artist: 'Jaya',                genre: 'uncle' },
-  { code: '40019', title: 'Kay Tagal Kitang Hinintay', artist: 'Hajji Alejandro',    genre: 'uncle' },
-  { code: '40020', title: 'Pangarap Ko Ang Ibigin Ka', artist: 'Hajji Alejandro',    genre: 'uncle' },
   // Ilocano  (50001–50020)
   { code: '50001', title: 'Pamulinawen',              artist: 'Traditional',         genre: 'ilocano' },
   { code: '50002', title: 'Manang Biday',             artist: 'Traditional',         genre: 'ilocano' },
@@ -537,7 +515,6 @@ const GENRE_LABELS = {
   opm:     'OPM / TAGALOG',
   pop:     'ENGLISH POP / ROCK',
   '90s':   '90s / 2000s HITS',
-  uncle:   'UNCLE CLASSICS (FILIPINO)',
   ilocano: 'ILOCANO',
 };
 
@@ -642,7 +619,7 @@ function renderSongs() {
     grouped[s.genre].push(s);
   });
 
-  const order = ['opm', 'pop', '90s', 'uncle', 'ilocano'];
+  const order = ['opm', 'pop', '90s', 'ilocano'];
   let html = '';
   order.forEach(g => {
     if (!grouped[g]) return;
