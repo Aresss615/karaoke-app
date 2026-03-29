@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Karaoke Songbook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Screen styles ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0a0f;
+      color: #e0e0f0;
+      font-family: 'Rajdhani', sans-serif;
+      padding: 24px 16px;
+    }
+
+    .cover {
+      text-align: center;
+      padding: 32px 0 40px;
+      border-bottom: 2px solid #2a2a40;
+      margin-bottom: 32px;
+    }
+    .cover-bar {
+      height: 4px;
+      background: linear-gradient(90deg, #ff2d78, #00e5ff, #00ff9d);
+      border-radius: 2px;
+      margin-bottom: 24px;
+    }
+    .cover h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: #00e5ff;
+      text-shadow: 0 0 20px #00e5ffaa;
+    }
+    .cover p {
+      margin-top: 8px;
+      font-size: 13px;
+      letter-spacing: 2px;
+      color: #6060a0;
+    }
+    .cover .total {
+      display: inline-block;
+      margin-top: 16px;
+      background: #1a1a26;
+      border: 1px solid #2a2a40;
+      border-radius: 20px;
+      padding: 6px 18px;
+      font-size: 13px;
+      color: #ff2d78;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* Print button */
+    .print-btn {
+      display: block;
+      margin: 0 auto 32px;
+      background: linear-gradient(135deg, #c0006a, #ff2d78);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 12px 32px;
+      cursor: pointer;
+      box-shadow: 0 0 12px #ff2d78aa;
+    }
+    .print-btn:active { filter: brightness(0.85); }
+
+    /* Genre section */
+    .genre-section { margin-bottom: 36px; }
+    .genre-heading {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: #00e5ff;
+      text-shadow: 0 0 8px #00e5ff88;
+      padding: 10px 0 8px;
+      border-bottom: 1px solid #2a2a40;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Song table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    tr:nth-child(even) td { background: #12121a; }
+    td {
+      padding: 7px 8px;
+      vertical-align: middle;
+    }
+    .td-code {
+      font-family: 'Orbitron', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #00e5ff;
+      opacity: 0.8;
+      width: 70px;
+      white-space: nowrap;
+    }
+    .td-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e0e0f0;
+    }
+    .td-artist {
+      font-size: 12px;
+      color: #6060a0;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* ── Print styles ── */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+        padding: 0;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .print-btn { display: none !important; }
+      .cover { border-bottom: 2px solid #000; }
+      .cover-bar { background: #000 !important; }
+      .cover h1 { color: #000 !important; text-shadow: none !important; font-size: 22px; }
+      .cover p, .cover .total { color: #444 !important; background: #f0f0f0 !important; border-color: #ccc !important; }
+
+      .genre-heading {
+        color: #000 !important;
+        text-shadow: none !important;
+        border-bottom: 2px solid #000;
+        font-size: 10px;
+        padding: 6px 0 4px;
+      }
+      .genre-section { margin-bottom: 20px; page-break-inside: avoid; }
+
+      table { width: 100%; }
+      tr:nth-child(even) td { background: #f5f5f5 !important; }
+      td { padding: 4px 6px; border-bottom: 1px solid #e0e0e0; }
+
+      .td-code { color: #0044aa !important; font-size: 10px; }
+      .td-title { color: #000 !important; font-size: 12px; }
+      .td-artist { color: #555 !important; font-size: 11px; }
+
+      /* 2-column layout on print */
+      .songbook-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 32px;
+      }
+    }
+
+    /* 2-col on wide screens too */
+    @media (min-width: 700px) {
+      body { padding: 32px 40px; }
+      .songbook-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="cover-bar"></div>
+  <h1>KARAOKE SONGBOOK</h1>
+  <p>SONG CODE DIRECTORY</p>
+  <div class="total" id="total-count"></div>
+</div>
+
+<button class="print-btn" onclick="window.print()">&#128438; PRINT SONGBOOK</button>
+
+<div class="songbook-grid" id="songbook-grid"></div>
+
+<script>
+const SONGS = [
+  // OPM / Tagalog
+  { code: '10001', title: 'Ang Huling El Bimbo',     artist: 'Eraserheads',         genre: 'opm' },
+  { code: '10002', title: 'Pare Ko',                  artist: 'Eraserheads',         genre: 'opm' },
+  { code: '10003', title: 'Ligaya',                   artist: 'Eraserheads',         genre: 'opm' },
+  { code: '10004', title: 'Kathang Isip',             artist: 'Ben&Ben',             genre: 'opm' },
+  { code: '10005', title: 'Leaves',                   artist: 'Ben&Ben',             genre: 'opm' },
+  { code: '10006', title: 'Di Ka Sayang',             artist: 'Ben&Ben',             genre: 'opm' },
+  { code: '10007', title: 'Binibini',                 artist: 'Zack Tabudlo',        genre: 'opm' },
+  { code: '10008', title: 'Pano',                     artist: 'Zack Tabudlo',        genre: 'opm' },
+  { code: '10009', title: 'Ikaw At Ako',              artist: 'Moira Dela Torre',    genre: 'opm' },
+  { code: '10010', title: 'Tagpuan',                  artist: 'Moira Dela Torre',    genre: 'opm' },
+  { code: '10011', title: 'Ilaw Sa Daan',             artist: 'Rico Blanco',         genre: 'opm' },
+  { code: '10012', title: 'Your Universe',            artist: 'Rico Blanco',         genre: 'opm' },
+  { code: '10013', title: 'Mundo',                    artist: 'IV of Spades',        genre: 'opm' },
+  { code: '10014', title: 'Come Inside of My Heart',  artist: 'IV of Spades',        genre: 'opm' },
+  { code: '10015', title: 'Palagi',                   artist: 'TJ Monterde',         genre: 'opm' },
+  { code: '10016', title: 'Buwan',                    artist: 'Juan Karlos',         genre: 'opm' },
+  { code: '10017', title: 'Ere',                      artist: 'Juan Karlos',         genre: 'opm' },
+  { code: '10018', title: 'Sana',                     artist: 'I Belong to the Zoo', genre: 'opm' },
+  { code: '10019', title: 'Araw-Araw',                artist: 'Orange & Lemons',     genre: 'opm' },
+  { code: '10020', title: 'Narda',                    artist: 'Kamikazee',           genre: 'opm' },
+  // English Pop/Rock
+  { code: '20001', title: 'Bohemian Rhapsody',        artist: 'Queen',               genre: 'pop' },
+  { code: '20002', title: "Don't Stop Me Now",        artist: 'Queen',               genre: 'pop' },
+  { code: '20003', title: 'Someone Like You',         artist: 'Adele',               genre: 'pop' },
+  { code: '20004', title: 'Rolling in the Deep',      artist: 'Adele',               genre: 'pop' },
+  { code: '20005', title: 'A Thousand Years',         artist: 'Christina Perri',     genre: 'pop' },
+  { code: '20006', title: 'Fix You',                  artist: 'Coldplay',            genre: 'pop' },
+  { code: '20007', title: 'The Scientist',            artist: 'Coldplay',            genre: 'pop' },
+  { code: '20008', title: 'Yellow',                   artist: 'Coldplay',            genre: 'pop' },
+  { code: '20009', title: 'Perfect',                  artist: 'Ed Sheeran',          genre: 'pop' },
+  { code: '20010', title: 'Shape of You',             artist: 'Ed Sheeran',          genre: 'pop' },
+  { code: '20011', title: 'Thinking Out Loud',        artist: 'Ed Sheeran',          genre: 'pop' },
+  { code: '20012', title: 'Let Her Go',               artist: 'Passenger',           genre: 'pop' },
+  { code: '20013', title: 'Stay With Me',             artist: 'Sam Smith',           genre: 'pop' },
+  { code: '20014', title: 'All of Me',                artist: 'John Legend',         genre: 'pop' },
+  { code: '20015', title: 'Shallow',                  artist: 'Lady Gaga & Bradley Cooper', genre: 'pop' },
+  { code: '20016', title: 'November Rain',            artist: "Guns N' Roses",       genre: 'pop' },
+  { code: '20017', title: "Sweet Child O' Mine",      artist: "Guns N' Roses",       genre: 'pop' },
+  { code: '20018', title: 'Wonderwall',               artist: 'Oasis',               genre: 'pop' },
+  { code: '20019', title: 'Hotel California',         artist: 'Eagles',              genre: 'pop' },
+  { code: '20020', title: "Don't Stop Believin'",     artist: 'Journey',             genre: 'pop' },
+  // 90s / 2000s
+  { code: '30001', title: 'I Want It That Way',       artist: 'Backstreet Boys',     genre: '90s' },
+  { code: '30002', title: 'Larger Than Life',         artist: 'Backstreet Boys',     genre: '90s' },
+  { code: '30003', title: 'Bye Bye Bye',              artist: 'NSYNC',               genre: '90s' },
+  { code: '30004', title: "Tearin' Up My Heart",      artist: 'NSYNC',               genre: '90s' },
+  { code: '30005', title: 'Wannabe',                  artist: 'Spice Girls',         genre: '90s' },
+  { code: '30006', title: "Say You'll Be There",      artist: 'Spice Girls',         genre: '90s' },
+  { code: '30007', title: '...Baby One More Time',    artist: 'Britney Spears',      genre: '90s' },
+  { code: '30008', title: 'Oops!... I Did It Again',  artist: 'Britney Spears',      genre: '90s' },
+  { code: '30009', title: 'My Heart Will Go On',      artist: 'Celine Dion',         genre: '90s' },
+  { code: '30010', title: 'Because You Loved Me',     artist: 'Celine Dion',         genre: '90s' },
+  { code: '30011', title: 'Hero',                     artist: 'Mariah Carey',        genre: '90s' },
+  { code: '30012', title: 'Always Be My Baby',        artist: 'Mariah Carey',        genre: '90s' },
+  { code: '30013', title: 'No Scrubs',                artist: 'TLC',                 genre: '90s' },
+  { code: '30014', title: 'Waterfalls',               artist: 'TLC',                 genre: '90s' },
+  { code: '30015', title: "Livin' La Vida Loca",      artist: 'Ricky Martin',        genre: '90s' },
+  { code: '30016', title: 'She Bangs',                artist: 'Ricky Martin',        genre: '90s' },
+  { code: '30017', title: 'Smooth',                   artist: 'Santana ft. Rob Thomas', genre: '90s' },
+  { code: '30018', title: 'Mambo No. 5',              artist: 'Lou Bega',            genre: '90s' },
+  { code: '30019', title: 'Genie in a Bottle',        artist: 'Christina Aguilera',  genre: '90s' },
+  { code: '30020', title: 'Beautiful',                artist: 'Christina Aguilera',  genre: '90s' },
+  // Uncle Classics
+  { code: '40001', title: 'Anak',                     artist: 'Freddie Aguilar',     genre: 'uncle' },
+  { code: '40002', title: 'Buhay',                    artist: 'Freddie Aguilar',     genre: 'uncle' },
+  { code: '40003', title: 'Tsinelas',                 artist: 'Max Surban',          genre: 'uncle' },
+  { code: '40004', title: 'Pilion Ta Kang Balay',     artist: 'Max Surban',          genre: 'uncle' },
+  { code: '40005', title: 'Magtanim Ay Di Biro',      artist: 'Traditional',         genre: 'uncle' },
+  { code: '40006', title: 'Leron Leron Sinta',        artist: 'Traditional',         genre: 'uncle' },
+  { code: '40007', title: 'Boom Tarat Tarat',         artist: 'Yoyoy Villame',       genre: 'uncle' },
+  { code: '40008', title: 'Siopao Siomai',            artist: 'Yoyoy Villame',       genre: 'uncle' },
+  { code: '40009', title: 'Ikaw',                     artist: 'Yeng Constantino',    genre: 'uncle' },
+  { code: '40010', title: 'Babalik Ka Rin',           artist: 'Gary Valenciano',     genre: 'uncle' },
+  { code: '40011', title: 'Di Bale Na Lang',          artist: 'Gary Valenciano',     genre: 'uncle' },
+  { code: '40012', title: 'You Are My Song',          artist: 'Martin Nievera',      genre: 'uncle' },
+  { code: '40013', title: 'Be My Lady',               artist: 'Martin Nievera',      genre: 'uncle' },
+  { code: '40014', title: 'Forevermore',              artist: 'Side A',              genre: 'uncle' },
+  { code: '40015', title: 'Perfect Gift',             artist: 'Side A',              genre: 'uncle' },
+  { code: '40016', title: 'Umagang Kay Ganda',        artist: 'Sampaguita',          genre: 'uncle' },
+  { code: '40017', title: 'Laging Nandito',           artist: 'Jaya',                genre: 'uncle' },
+  { code: '40018', title: 'Ikaw Pa Rin',              artist: 'Jaya',                genre: 'uncle' },
+  { code: '40019', title: 'Kay Tagal Kitang Hinintay', artist: 'Hajji Alejandro',    genre: 'uncle' },
+  { code: '40020', title: 'Pangarap Ko Ang Ibigin Ka', artist: 'Hajji Alejandro',    genre: 'uncle' },
+  // Ilocano
+  { code: '50001', title: 'Pamulinawen',              artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50002', title: 'Manang Biday',             artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50003', title: 'Naimbag A Bigat',          artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50004', title: 'Laji',                     artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50005', title: 'Sa Kabukiran',             artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50006', title: 'Palong-Palong',            artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50007', title: 'Ay Kari',                  artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50008', title: 'Agyaman Ak Kenka',         artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50009', title: 'Dungdungwen Kanto',        artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50010', title: 'Nalayag A Balasang',       artist: 'Traditional',         genre: 'ilocano' },
+];
+
+const GENRE_META = [
+  { key: 'opm',     label: 'OPM / TAGALOG',           range: '10001–10999' },
+  { key: 'pop',     label: 'ENGLISH POP / ROCK',       range: '20001–20999' },
+  { key: '90s',     label: '90s / 2000s HITS',         range: '30001–30999' },
+  { key: 'uncle',   label: 'UNCLE CLASSICS (FILIPINO)', range: '40001–40999' },
+  { key: 'ilocano', label: 'ILOCANO',                  range: '50001–50999' },
+];
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Render
+document.getElementById('total-count').textContent = `${SONGS.length} SONGS`;
+
+const grid = document.getElementById('songbook-grid');
+GENRE_META.forEach(({ key, label, range }) => {
+  const songs = SONGS.filter(s => s.genre === key);
+  if (!songs.length) return;
+
+  const sec = document.createElement('div');
+  sec.className = 'genre-section';
+
+  let rows = songs.map(s => `
+    <tr>
+      <td class="td-code">${s.code}</td>
+      <td class="td-title">${escHtml(s.title)}</td>
+      <td class="td-artist">${escHtml(s.artist)}</td>
+    </tr>`).join('');
+
+  sec.innerHTML = `
+    <div class="genre-heading">${label} <span style="opacity:.4;font-size:10px;margin-left:8px;">${range}</span></div>
+    <table><tbody>${rows}</tbody></table>`;
+
+  grid.appendChild(sec);
+});
+</script>
+</body>
+</html>

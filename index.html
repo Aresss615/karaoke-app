@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <title>KaraoKe Machine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #12121a;
+      --panel:     #1a1a26;
+      --border:    #2a2a40;
+      --pink:      #ff2d78;
+      --cyan:      #00e5ff;
+      --yellow:    #ffe600;
+      --green:     #00ff9d;
+      --text:      #e0e0f0;
+      --muted:     #6060a0;
+      --glow-pink: 0 0 12px #ff2d78aa, 0 0 30px #ff2d7844;
+      --glow-cyan: 0 0 12px #00e5ffaa, 0 0 30px #00e5ff44;
+      --glow-green:0 0 12px #00ff9daa, 0 0 30px #00ff9d44;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+      overflow: hidden;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* ── Nav ── */
+    #nav {
+      display: flex;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      flex: 1;
+      padding: 12px 0;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+    .nav-btn::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 15%; right: 15%;
+      height: 2px;
+      background: var(--cyan);
+      box-shadow: var(--glow-cyan);
+      transform: scaleX(0);
+      transition: transform 0.2s;
+    }
+    .nav-btn.active { color: var(--cyan); }
+    .nav-btn.active::after { transform: scaleX(1); }
+
+    /* ── Screens ── */
+    .screen {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+    .screen.active { display: flex; }
+
+    /* ══════════════════════════════
+       PAD SCREEN
+    ══════════════════════════════ */
+    #screen-pad {
+      padding: 16px 16px 8px;
+      gap: 14px;
+    }
+
+    /* LED Display */
+    #display {
+      background: #050508;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px 12px;
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 20px #00000088, 0 0 0 1px #ffffff08;
+    }
+    #display::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px, #ffffff04 2px, #ffffff04 4px
+      );
+      pointer-events: none;
+    }
+    #display-digits {
+      font-family: 'Orbitron', monospace;
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: 8px;
+      color: var(--cyan);
+      text-shadow: var(--glow-cyan);
+      line-height: 1;
+      min-height: 1em;
+    }
+    #display-digits.empty {
+      color: #1a2a2e;
+      text-shadow: none;
+    }
+    #display-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-top: 8px;
+      min-height: 1.4em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #display-title.match { color: var(--pink); text-shadow: var(--glow-pink); }
+    #display-title.no-match { color: var(--muted); }
+
+    /* Numpad */
+    #numpad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      flex: 1;
+    }
+    .key {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Orbitron', monospace;
+      font-size: 24px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 68px;
+      transition: background 0.1s, transform 0.08s, box-shadow 0.1s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+    }
+    .key::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, #ffffff22 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .key:active { transform: scale(0.93); }
+    .key:active::after { opacity: 1; }
+
+    .key.digit:hover { border-color: var(--cyan); box-shadow: var(--glow-cyan); }
+    .key.digit:active { border-color: var(--cyan); background: #001a20; }
+
+    .key.back {
+      font-size: 20px;
+      color: var(--yellow);
+      border-color: #2a2a00;
+    }
+    .key.back:active { background: #1a1500; border-color: var(--yellow); }
+
+    .key.play {
+      grid-column: span 2;
+      background: linear-gradient(135deg, #c0006a 0%, #ff2d78 50%, #ff6ba8 100%);
+      border: none;
+      color: #fff;
+      font-size: 18px;
+      letter-spacing: 3px;
+      box-shadow: var(--glow-pink);
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+    }
+    .key.play:active { transform: scale(0.96); filter: brightness(0.85); }
+    .key.play:disabled {
+      background: var(--panel);
+      color: var(--muted);
+      box-shadow: none;
+      border: 1px solid var(--border);
+      cursor: default;
+    }
+
+    #hint {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      padding-bottom: 6px;
+      flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════
+       SONGBOOK SCREEN
+    ══════════════════════════════ */
+    #screen-book {
+      padding: 12px 12px 0;
+      gap: 10px;
+    }
+
+    #search-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+    #search-wrap svg {
+      position: absolute;
+      left: 12px; top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    #search {
+      width: 100%;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      padding: 11px 12px 11px 38px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    #search:focus { border-color: var(--cyan); box-shadow: var(--glow-cyan); }
+    #search::placeholder { color: var(--muted); }
+
+    #genre-tabs {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    #genre-tabs::-webkit-scrollbar { display: none; }
+    .genre-tab {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--muted);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      padding: 6px 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .genre-tab.active {
+      background: #001a20;
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: var(--glow-cyan);
+    }
+
+    #song-list {
+      flex: 1;
+      overflow-y: auto;
+      border-radius: 10px;
+      padding-bottom: 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+    #song-list::-webkit-scrollbar { width: 3px; }
+    #song-list::-webkit-scrollbar-track { background: transparent; }
+    #song-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .genre-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 14px 4px 6px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+    }
+
+    .song-row {
+      display: flex;
+      align-items: center;
+      padding: 11px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      gap: 12px;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .song-row:active { background: var(--panel); }
+
+    .song-code {
+      font-family: 'Orbitron', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--cyan);
+      min-width: 52px;
+      opacity: 0.75;
+    }
+    .song-info { flex: 1; min-width: 0; }
+    .song-title {
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+    .song-artist {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+    .song-arrow {
+      color: var(--pink);
+      font-size: 18px;
+      opacity: 0.5;
+    }
+
+    .no-results {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 40px 20px;
+      letter-spacing: 1px;
+    }
+
+    .machine-header {
+      background: linear-gradient(90deg, var(--pink), var(--cyan), var(--green));
+      height: 3px;
+      flex-shrink: 0;
+    }
+
+    @keyframes flash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .flash { animation: flash 0.12s 3; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="machine-header"></div>
+
+  <nav id="nav">
+    <button class="nav-btn active" data-screen="pad" onclick="showScreen('pad')">&#9654; KARAOKE</button>
+    <button class="nav-btn" data-screen="book" onclick="showScreen('book')">&#9835; SONGBOOK</button>
+  </nav>
+
+  <!-- PAD SCREEN -->
+  <section id="screen-pad" class="screen active">
+    <div id="display">
+      <div id="display-digits" class="empty">_ _ _ _ _</div>
+      <div id="display-title" class="no-match">ENTER 5-DIGIT SONG CODE</div>
+    </div>
+
+    <div id="numpad">
+      <button class="key digit" onclick="pressDigit('1')">1</button>
+      <button class="key digit" onclick="pressDigit('2')">2</button>
+      <button class="key digit" onclick="pressDigit('3')">3</button>
+      <button class="key digit" onclick="pressDigit('4')">4</button>
+      <button class="key digit" onclick="pressDigit('5')">5</button>
+      <button class="key digit" onclick="pressDigit('6')">6</button>
+      <button class="key digit" onclick="pressDigit('7')">7</button>
+      <button class="key digit" onclick="pressDigit('8')">8</button>
+      <button class="key digit" onclick="pressDigit('9')">9</button>
+      <button class="key back" onclick="pressBack()">&#9003;</button>
+      <button class="key digit" onclick="pressDigit('0')">0</button>
+      <button class="key play" id="play-btn" onclick="pressPlay()">&#9654; PLAY</button>
+    </div>
+
+    <div id="hint">BROWSE SONGBOOK FOR CODES</div>
+  </section>
+
+  <!-- SONGBOOK SCREEN -->
+  <section id="screen-book" class="screen">
+    <div id="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input id="search" type="search" placeholder="Search songs or artists…" oninput="filterSongs()" autocomplete="off" autocorrect="off" spellcheck="false" />
+    </div>
+
+    <div id="genre-tabs">
+      <button class="genre-tab active" data-genre="all" onclick="setGenre('all')">ALL</button>
+      <button class="genre-tab" data-genre="opm" onclick="setGenre('opm')">OPM / TAGALOG</button>
+      <button class="genre-tab" data-genre="pop" onclick="setGenre('pop')">ENGLISH POP/ROCK</button>
+      <button class="genre-tab" data-genre="90s" onclick="setGenre('90s')">90s / 2000s</button>
+      <button class="genre-tab" data-genre="uncle" onclick="setGenre('uncle')">UNCLE CLASSICS</button>
+      <button class="genre-tab" data-genre="ilocano" onclick="setGenre('ilocano')">ILOCANO</button>
+    </div>
+
+    <div id="song-list"></div>
+  </section>
+</div>
+
+<script>
+const SONGS = [
+  // OPM / Tagalog  (10001–10020)
+  { code: '10001', title: 'Ang Huling El Bimbo',     artist: 'Eraserheads',         genre: 'opm' },
+  { code: '10002', title: 'Pare Ko',                  artist: 'Eraserheads',         genre: 'opm' },
+  { code: '10003', title: 'Ligaya',                   artist: 'Eraserheads',         genre: 'opm' },
+  { code: '10004', title: 'Kathang Isip',             artist: 'Ben&Ben',             genre: 'opm' },
+  { code: '10005', title: 'Leaves',                   artist: 'Ben&Ben',             genre: 'opm' },
+  { code: '10006', title: 'Di Ka Sayang',             artist: 'Ben&Ben',             genre: 'opm' },
+  { code: '10007', title: 'Binibini',                 artist: 'Zack Tabudlo',        genre: 'opm' },
+  { code: '10008', title: 'Pano',                     artist: 'Zack Tabudlo',        genre: 'opm' },
+  { code: '10009', title: 'Ikaw At Ako',              artist: 'Moira Dela Torre',    genre: 'opm' },
+  { code: '10010', title: 'Tagpuan',                  artist: 'Moira Dela Torre',    genre: 'opm' },
+  { code: '10011', title: 'Ilaw Sa Daan',             artist: 'Rico Blanco',         genre: 'opm' },
+  { code: '10012', title: 'Your Universe',            artist: 'Rico Blanco',         genre: 'opm' },
+  { code: '10013', title: 'Mundo',                    artist: 'IV of Spades',        genre: 'opm' },
+  { code: '10014', title: 'Come Inside of My Heart',  artist: 'IV of Spades',        genre: 'opm' },
+  { code: '10015', title: 'Palagi',                   artist: 'TJ Monterde',         genre: 'opm' },
+  { code: '10016', title: 'Buwan',                    artist: 'Juan Karlos',         genre: 'opm' },
+  { code: '10017', title: 'Ere',                      artist: 'Juan Karlos',         genre: 'opm' },
+  { code: '10018', title: 'Sana',                     artist: 'I Belong to the Zoo', genre: 'opm' },
+  { code: '10019', title: 'Araw-Araw',                artist: 'Orange & Lemons',     genre: 'opm' },
+  { code: '10020', title: 'Narda',                    artist: 'Kamikazee',           genre: 'opm' },
+  // English Pop/Rock  (20001–20020)
+  { code: '20001', title: 'Bohemian Rhapsody',        artist: 'Queen',               genre: 'pop' },
+  { code: '20002', title: "Don't Stop Me Now",        artist: 'Queen',               genre: 'pop' },
+  { code: '20003', title: 'Someone Like You',         artist: 'Adele',               genre: 'pop' },
+  { code: '20004', title: 'Rolling in the Deep',      artist: 'Adele',               genre: 'pop' },
+  { code: '20005', title: 'A Thousand Years',         artist: 'Christina Perri',     genre: 'pop' },
+  { code: '20006', title: 'Fix You',                  artist: 'Coldplay',            genre: 'pop' },
+  { code: '20007', title: 'The Scientist',            artist: 'Coldplay',            genre: 'pop' },
+  { code: '20008', title: 'Yellow',                   artist: 'Coldplay',            genre: 'pop' },
+  { code: '20009', title: 'Perfect',                  artist: 'Ed Sheeran',          genre: 'pop' },
+  { code: '20010', title: 'Shape of You',             artist: 'Ed Sheeran',          genre: 'pop' },
+  { code: '20011', title: 'Thinking Out Loud',        artist: 'Ed Sheeran',          genre: 'pop' },
+  { code: '20012', title: 'Let Her Go',               artist: 'Passenger',           genre: 'pop' },
+  { code: '20013', title: 'Stay With Me',             artist: 'Sam Smith',           genre: 'pop' },
+  { code: '20014', title: 'All of Me',                artist: 'John Legend',         genre: 'pop' },
+  { code: '20015', title: 'Shallow',                  artist: 'Lady Gaga & Bradley Cooper', genre: 'pop' },
+  { code: '20016', title: 'November Rain',            artist: "Guns N' Roses",       genre: 'pop' },
+  { code: '20017', title: "Sweet Child O' Mine",      artist: "Guns N' Roses",       genre: 'pop' },
+  { code: '20018', title: 'Wonderwall',               artist: 'Oasis',               genre: 'pop' },
+  { code: '20019', title: 'Hotel California',         artist: 'Eagles',              genre: 'pop' },
+  { code: '20020', title: "Don't Stop Believin'",     artist: 'Journey',             genre: 'pop' },
+  // 90s / 2000s  (30001–30020)
+  { code: '30001', title: 'I Want It That Way',       artist: 'Backstreet Boys',     genre: '90s' },
+  { code: '30002', title: 'Larger Than Life',         artist: 'Backstreet Boys',     genre: '90s' },
+  { code: '30003', title: 'Bye Bye Bye',              artist: 'NSYNC',               genre: '90s' },
+  { code: '30004', title: "Tearin' Up My Heart",      artist: 'NSYNC',               genre: '90s' },
+  { code: '30005', title: 'Wannabe',                  artist: 'Spice Girls',         genre: '90s' },
+  { code: '30006', title: "Say You'll Be There",      artist: 'Spice Girls',         genre: '90s' },
+  { code: '30007', title: '...Baby One More Time',    artist: 'Britney Spears',      genre: '90s' },
+  { code: '30008', title: 'Oops!... I Did It Again',  artist: 'Britney Spears',      genre: '90s' },
+  { code: '30009', title: 'My Heart Will Go On',      artist: 'Celine Dion',         genre: '90s' },
+  { code: '30010', title: 'Because You Loved Me',     artist: 'Celine Dion',         genre: '90s' },
+  { code: '30011', title: 'Hero',                     artist: 'Mariah Carey',        genre: '90s' },
+  { code: '30012', title: 'Always Be My Baby',        artist: 'Mariah Carey',        genre: '90s' },
+  { code: '30013', title: 'No Scrubs',                artist: 'TLC',                 genre: '90s' },
+  { code: '30014', title: 'Waterfalls',               artist: 'TLC',                 genre: '90s' },
+  { code: '30015', title: "Livin' La Vida Loca",      artist: 'Ricky Martin',        genre: '90s' },
+  { code: '30016', title: 'She Bangs',                artist: 'Ricky Martin',        genre: '90s' },
+  { code: '30017', title: 'Smooth',                   artist: 'Santana ft. Rob Thomas', genre: '90s' },
+  { code: '30018', title: 'Mambo No. 5',              artist: 'Lou Bega',            genre: '90s' },
+  { code: '30019', title: 'Genie in a Bottle',        artist: 'Christina Aguilera',  genre: '90s' },
+  { code: '30020', title: 'Beautiful',                artist: 'Christina Aguilera',  genre: '90s' },
+  // Uncle Classics  (40001–40020)
+  { code: '40001', title: 'Anak',                     artist: 'Freddie Aguilar',     genre: 'uncle' },
+  { code: '40002', title: 'Buhay',                    artist: 'Freddie Aguilar',     genre: 'uncle' },
+  { code: '40003', title: 'Tsinelas',                 artist: 'Max Surban',          genre: 'uncle' },
+  { code: '40004', title: 'Pilion Ta Kang Balay',     artist: 'Max Surban',          genre: 'uncle' },
+  { code: '40005', title: 'Magtanim Ay Di Biro',      artist: 'Traditional',         genre: 'uncle' },
+  { code: '40006', title: 'Leron Leron Sinta',        artist: 'Traditional',         genre: 'uncle' },
+  { code: '40007', title: 'Boom Tarat Tarat',         artist: 'Yoyoy Villame',       genre: 'uncle' },
+  { code: '40008', title: 'Siopao Siomai',            artist: 'Yoyoy Villame',       genre: 'uncle' },
+  { code: '40009', title: 'Ikaw',                     artist: 'Yeng Constantino',    genre: 'uncle' },
+  { code: '40010', title: 'Babalik Ka Rin',           artist: 'Gary Valenciano',     genre: 'uncle' },
+  { code: '40011', title: 'Di Bale Na Lang',          artist: 'Gary Valenciano',     genre: 'uncle' },
+  { code: '40012', title: 'You Are My Song',          artist: 'Martin Nievera',      genre: 'uncle' },
+  { code: '40013', title: 'Be My Lady',               artist: 'Martin Nievera',      genre: 'uncle' },
+  { code: '40014', title: 'Forevermore',              artist: 'Side A',              genre: 'uncle' },
+  { code: '40015', title: 'Perfect Gift',             artist: 'Side A',              genre: 'uncle' },
+  { code: '40016', title: 'Umagang Kay Ganda',        artist: 'Sampaguita',          genre: 'uncle' },
+  { code: '40017', title: 'Laging Nandito',           artist: 'Jaya',                genre: 'uncle' },
+  { code: '40018', title: 'Ikaw Pa Rin',              artist: 'Jaya',                genre: 'uncle' },
+  { code: '40019', title: 'Kay Tagal Kitang Hinintay', artist: 'Hajji Alejandro',    genre: 'uncle' },
+  { code: '40020', title: 'Pangarap Ko Ang Ibigin Ka', artist: 'Hajji Alejandro',    genre: 'uncle' },
+  // Ilocano  (50001–50020)
+  { code: '50001', title: 'Pamulinawen',              artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50002', title: 'Manang Biday',             artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50003', title: 'Naimbag A Bigat',          artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50004', title: 'Laji',                     artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50005', title: 'Sa Kabukiran',             artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50006', title: 'Palong-Palong',            artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50007', title: 'Ay Kari',                  artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50008', title: 'Agyaman Ak Kenka',         artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50009', title: 'Dungdungwen Kanto',        artist: 'Traditional',         genre: 'ilocano' },
+  { code: '50010', title: 'Nalayag A Balasang',       artist: 'Traditional',         genre: 'ilocano' },
+];
+
+const GENRE_LABELS = {
+  opm:     'OPM / TAGALOG',
+  pop:     'ENGLISH POP / ROCK',
+  '90s':   '90s / 2000s HITS',
+  uncle:   'UNCLE CLASSICS (FILIPINO)',
+  ilocano: 'ILOCANO',
+};
+
+const SONG_MAP = Object.fromEntries(SONGS.map(s => [s.code, s]));
+
+let digits = '';
+let activeGenre = 'all';
+
+function pressDigit(d) {
+  if (digits.length >= 5) return;
+  digits += d;
+  updateDisplay();
+}
+
+function pressBack() {
+  digits = digits.slice(0, -1);
+  updateDisplay();
+}
+
+function updateDisplay() {
+  const el = document.getElementById('display-digits');
+  const titleEl = document.getElementById('display-title');
+  const playBtn = document.getElementById('play-btn');
+
+  if (!digits) {
+    el.className = 'empty';
+    el.textContent = '_ _ _ _ _';
+    titleEl.className = 'no-match';
+    titleEl.textContent = 'ENTER 5-DIGIT SONG CODE';
+    playBtn.disabled = true;
+    return;
+  }
+
+  const padded = (digits + '_____').slice(0, 5).split('').join(' ');
+  el.className = '';
+  el.textContent = padded;
+
+  const song = digits.length === 5 ? SONG_MAP[digits] : null;
+  if (song) {
+    titleEl.className = 'match';
+    titleEl.textContent = `${song.title}  —  ${song.artist}`;
+    playBtn.disabled = false;
+  } else {
+    titleEl.className = 'no-match';
+    titleEl.textContent = digits.length === 5 ? 'NO SONG FOUND' : 'ENTER SONG CODE';
+    playBtn.disabled = digits.length < 5;
+  }
+}
+
+function pressPlay() {
+  if (digits.length < 5) return;
+  const song = SONG_MAP[digits];
+  if (!song) return;
+
+  const el = document.getElementById('display-digits');
+  el.classList.add('flash');
+  el.addEventListener('animationend', () => el.classList.remove('flash'), { once: true });
+
+  const query = encodeURIComponent(`${song.title} ${song.artist} karaoke`);
+  window.open(`https://www.youtube.com/results?search_query=${query}`, '_blank');
+}
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelector(`[data-screen="${name}"]`).classList.add('active');
+  if (name === 'book') renderSongs();
+}
+
+function setGenre(g) {
+  activeGenre = g;
+  document.querySelectorAll('.genre-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.genre === g);
+  });
+  renderSongs();
+}
+
+function filterSongs() { renderSongs(); }
+
+function renderSongs() {
+  const query = document.getElementById('search').value.trim().toLowerCase();
+  const list = document.getElementById('song-list');
+
+  let filtered = SONGS.filter(s => {
+    const genreMatch = activeGenre === 'all' || s.genre === activeGenre;
+    const textMatch = !query ||
+      s.title.toLowerCase().includes(query) ||
+      s.artist.toLowerCase().includes(query) ||
+      s.code.includes(query);
+    return genreMatch && textMatch;
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="no-results">NO SONGS FOUND</div>';
+    return;
+  }
+
+  const grouped = {};
+  filtered.forEach(s => {
+    if (!grouped[s.genre]) grouped[s.genre] = [];
+    grouped[s.genre].push(s);
+  });
+
+  const order = ['opm', 'pop', '90s', 'uncle', 'ilocano'];
+  let html = '';
+  order.forEach(g => {
+    if (!grouped[g]) return;
+    if (activeGenre === 'all' || query) {
+      html += `<div class="genre-label">${GENRE_LABELS[g]}</div>`;
+    }
+    grouped[g].forEach(s => {
+      html += `
+        <div class="song-row" onclick="selectSong('${s.code}')">
+          <span class="song-code">${s.code}</span>
+          <div class="song-info">
+            <div class="song-title">${escHtml(s.title)}</div>
+            <div class="song-artist">${escHtml(s.artist)}</div>
+          </div>
+          <span class="song-arrow">&#9654;</span>
+        </div>`;
+    });
+  });
+
+  list.innerHTML = html;
+}
+
+function selectSong(code) {
+  digits = code;
+  updateDisplay();
+  showScreen('pad');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+updateDisplay();
+renderSongs();
+</script>
+</body>
+</html>
